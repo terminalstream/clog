@@ -16,6 +16,28 @@ package main
 import "github.com/terminalstream/clog"
 
 func main() {
+	ctx := clog.Context(nil, clog.WithNoTimeKey())
 
+	clog.SetLevel(ctx, clog.DebugLevel)
+
+	clog.Info(ctx, "Hello, world!")
+
+	ctx = clog.ContextWithField(ctx, "foo", "bar")
+
+	clog.Info(ctx, "Hello, world!")
+
+	clog.Info(ctx, "Hello, world!", clog.WithField("z", "a"), clog.WithField("with", "field"))
+	clog.Info(ctx, "Hello, world!", clog.WithFields(clog.Fields{"z": "a", "with": "field"}))
+
+	clog.Debug(ctx, "Hello, world!")
+	clog.SetLevel(ctx, clog.InfoLevel)
+	clog.Debug(ctx, "Hello, world!")
 }
+
+// output:
+// INFO    Hello, world!
+// INFO    Hello, world!   {"foo": "bar"}
+// INFO    Hello, world!   {"foo": "bar", "with": "field", "z": "a"}
+// INFO    Hello, world!   {"foo": "bar", "z": "a", "with": "field"}
+// DEBUG   Hello, world!   {"foo": "bar"}
 ```
