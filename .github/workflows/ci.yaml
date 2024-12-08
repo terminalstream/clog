@@ -39,3 +39,6 @@ jobs:
 
       - name: Run linters
         run: make lint
+
+      - name: Ensure no vulnerabilities
+        run: make vuln

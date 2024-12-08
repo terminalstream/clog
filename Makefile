@@ -27,3 +27,7 @@ license:
 
 checks: lint license
 
+vuln:
+	@echo "Scanning for vulnerabilities..."
+	@go install golang.org/x/vuln/cmd/govulncheck@v1.1.3
+	@govulncheck ./...
