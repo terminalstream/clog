@@ -1,0 +1,12 @@
+# weasel config
+
+README\.md, Docs
+
+# Remove false positives.
+\.gitignore, Ignore
+\.dependency_license, Ignore
+go\.mod, Ignore
+go\.sum, Ignore
+\.golangci\.yml, Ignore
+\.idea, Ignore
+\.vscode, Ignore
