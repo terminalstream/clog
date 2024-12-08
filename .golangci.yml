@@ -1,0 +1,83 @@
+run:
+  concurrency: 4
+  timeout: 1m
+  issues-exit-code: 1
+  tests: true
+
+output:
+  formats:
+    - format: colored-line-number
+  print-issued-lines: true
+  print-linter-name: true
+
+linters-settings:
+  errcheck:
+    check-type-assertions: true
+    check-blank: true
+  govet:
+    enable-all: true
+  gofmt:
+    simplify: true
+  goimports:
+    local-prefixes: github.com/terminalstream/strum
+  gocyclo:
+    min-complexity: 7
+  dupl:
+    threshold: 100
+  goconst:
+    min-len: 3
+    min-occurrences: 3
+  misspell:
+    locale: US
+  lll:
+    line-length: 100
+    tab-width: 2
+  unused:
+    local-variables-are-used: false
+    parameters-are-used: false
+  nakedret:
+    max-func-lines: 0
+  prealloc:
+    simple: true
+    range-loops: true
+    for-loops: true
+  revive:
+    enable-all-rules: true
+    rules:
+      - name: exported # TODO not working
+        severity: error
+        disabled: false
+        arguments:
+          - "preserveScope"
+          - "checkPrivateReceivers"
+          - "sayRepetitiveInsteadOfStutters"
+  gci:
+    sections:
+      - standard
+      - default
+      - localmodule
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - style
+      - performance
+      - experimental
+      - opinionated
+    settings:
+      captLocal:
+        paramsOnly: true
+      rangeValCopy:
+        sizeThreshold: 32
+
+linters:
+  enable-all: true
+  disable:
+    - depguard
+    - gomnd
+  fast: true
+
+issues:
+  exclude-use-default: false
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  new: false
