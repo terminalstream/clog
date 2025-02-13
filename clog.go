@@ -40,6 +40,8 @@ const (
 	WarnLevel = Level(zapcore.WarnLevel)
 	// ErrorLevel represents the ERROR level.
 	ErrorLevel = Level(zapcore.ErrorLevel)
+	// PanicLevel represents the PANIC level.
+	PanicLevel = Level(zapcore.PanicLevel)
 )
 
 const (
@@ -410,6 +412,20 @@ func Error(ctx context.Context, msg string, opts ...Option) {
 	}
 
 	logger.Error(msg, getFields(ctx, opts)...)
+}
+
+// Panic logs at the PanicLevel.
+func Panic(ctx context.Context, msg string, opts ...Option) {
+	logger, ok := ctx.Value(loggerKey).(*zap.Logger)
+	if !ok {
+		return
+	}
+
+	if !logger.Level().Enabled(zapcore.PanicLevel) {
+		return
+	}
+
+	logger.Panic(msg, getFields(ctx, opts)...)
 }
 
 func getFields(ctx context.Context, opts []Option) []zap.Field {
