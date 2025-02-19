@@ -246,10 +246,12 @@ func Context(parent context.Context, opts ...ContextOption) context.Context {
 	logger := zap.Must(zapConfig.Build())
 
 	if len(o.entryFieldCallbacks) > 0 {
-		logger = zap.New(&entryFieldCallbacks{
-			Core: logger.Core(),
-			cbs:  o.entryFieldCallbacks,
-		})
+		logger = logger.WithOptions(zap.WrapCore(func(core zapcore.Core) zapcore.Core {
+			return &entryFieldCallbacks{
+				Core: core,
+				cbs:  o.entryFieldCallbacks,
+			}
+		}))
 	}
 
 	return context.WithValue(
