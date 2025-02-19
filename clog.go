@@ -1,4 +1,4 @@
-// Copyright 2024 Terminal Stream Inc.
+// Copyright 2025 Terminal Stream Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package clog
 import (
 	"context"
 	"fmt"
+
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -111,14 +112,14 @@ func WithFields(fields Fields) Option {
 type ContextOption func(*contextOptions)
 
 type contextOptions struct {
-	encoding            string
-	level               Level
-	outputPath          string
-	levelKey            string
-	msgKey              string
-	timeKey             string
-	errorKey            string
-	entryFieldCallbacks []func(zapcore.Entry, []zapcore.Field)
+	encoding   string
+	level      Level
+	outputPath string
+	levelKey   string
+	msgKey     string
+	timeKey    string
+	errorKey   string
+	hooks      []func(zapcore.Entry, []zapcore.Field)
 }
 
 // WithLevel lets the logging context's Level to level. InfoLevel is the default Level.
@@ -184,9 +185,14 @@ func WithErrorKey(key string) ContextOption {
 	}
 }
 
-func WithEntryFieldCallbacks(cbs ...func(zapcore.Entry, []zapcore.Field)) ContextOption {
+// WithHooks registers hooks that will be invoked just before the log entry is written
+// (the fields array includes those inherited by the logging context).
+//
+// The hooks are blocking operations (ie. executed in the same goroutine) and the log entry
+// will be written only after all hooks have finished.
+func WithHooks(cbs ...func(zapcore.Entry, []zapcore.Field)) ContextOption {
 	return func(o *contextOptions) {
-		o.entryFieldCallbacks = append(o.entryFieldCallbacks, cbs...)
+		o.hooks = append(o.hooks, cbs...)
 	}
 }
 
@@ -245,11 +251,11 @@ func Context(parent context.Context, opts ...ContextOption) context.Context {
 
 	logger := zap.Must(zapConfig.Build())
 
-	if len(o.entryFieldCallbacks) > 0 {
+	if len(o.hooks) > 0 {
 		logger = logger.WithOptions(zap.WrapCore(func(core zapcore.Core) zapcore.Core {
-			return &entryFieldCallbacks{
-				Core: core,
-				cbs:  o.entryFieldCallbacks,
+			return &hooksLogger{
+				Core:  core,
+				hooks: o.hooks,
 			}
 		}))
 	}
