@@ -323,32 +323,6 @@ func SetLevel(ctx context.Context, level Level) {
 	l.SetLevel(zapcore.Level(level))
 }
 
-// AddHooks adds hooks to the given logging context.
-//
-// If `ctx` is not a logging context then this is a no-op.
-func AddHooks(ctx context.Context, hooks ...func(zapcore.Entry) error) {
-	l, ok := ctx.Value(loggerKey).(*zap.Logger)
-	if !ok {
-		return
-	}
-
-	*l = *l.WithOptions(zap.Hooks(hooks...))
-}
-
-func AddEntryFieldCallbacks(ctx context.Context, cbs ...func(zapcore.Entry, []zapcore.Field)) {
-	l, ok := ctx.Value(loggerKey).(*zap.Logger)
-	if !ok {
-		return
-	}
-
-	if len(cbs) > 0 {
-		*l = *zap.New(&entryFieldCallbacks{
-			Core: l.Core(),
-			cbs:  cbs,
-		})
-	}
-}
-
 // DebugEnabled indicates whether DebugLevel is enabled on the given context.
 //
 // If ctx is not a logging context then false is returned.

@@ -24,3 +24,9 @@ func (c *entryFieldCallbacks) Write(entry zapcore.Entry, fields []zapcore.Field)
 
 	return err
 }
+
+func (c *entryFieldCallbacks) With(fields []zapcore.Field) zapcore.Core {
+	c.Core = c.Core.With(fields)
+
+	return c
+}
