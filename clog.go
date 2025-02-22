@@ -55,6 +55,8 @@ const (
 	DefaultErrorKey = "error"
 	// DefaultTimeKey is the default key that holds the timestamp.
 	DefaultTimeKey = "time"
+	// DefaultOutputPath is the default output path. It directs output to os.Stderr.
+	DefaultOutputPath = "stderr"
 )
 
 // Fields is a collection of key-values that you can provide to a logging context or to a log
@@ -112,14 +114,14 @@ func WithFields(fields Fields) Option {
 type ContextOption func(*contextOptions)
 
 type contextOptions struct {
-	encoding   string
-	level      Level
-	outputPath string
-	levelKey   string
-	msgKey     string
-	timeKey    string
-	errorKey   string
-	hooks      []func(zapcore.Entry, []zapcore.Field)
+	encoding    string
+	level       Level
+	outputPaths []string
+	levelKey    string
+	msgKey      string
+	timeKey     string
+	errorKey    string
+	hooks       []func(zapcore.Entry, []zapcore.Field)
 }
 
 // WithLevel lets the logging context's Level to level. InfoLevel is the default Level.
@@ -143,10 +145,24 @@ func WithConsoleEncoding() ContextOption {
 	}
 }
 
-// OutputToStdout redirects logging output to os.Stdout (default is os.Stderr).
+// OutputToStdout redirects logging output to os.Stdout (default is DefaultOutputPath).
 func OutputToStdout() ContextOption {
 	return func(o *contextOptions) {
-		o.outputPath = "stdout"
+		o.outputPaths = []string{"stdout"}
+	}
+}
+
+// WithOutputPaths adds the given output paths to the zap logger. The default output path is DefaultOutputPath.
+func WithOutputPaths(paths ...string) ContextOption {
+	return func(o *contextOptions) {
+		o.outputPaths = paths
+	}
+}
+
+// WithNoOutputPaths disables all output. Hooks, however, are still invoked (see WithHooks).
+func WithNoOutputPaths() ContextOption {
+	return func(o *contextOptions) {
+		o.outputPaths = nil
 	}
 }
 
@@ -219,13 +235,13 @@ func Context(parent context.Context, opts ...ContextOption) context.Context {
 	}
 
 	o := &contextOptions{
-		encoding:   DefaultEncoding,
-		level:      DefaultLevel,
-		levelKey:   DefaultLevelKey,
-		msgKey:     DefaultMessageKey,
-		timeKey:    DefaultTimeKey,
-		errorKey:   DefaultErrorKey,
-		outputPath: "stderr",
+		encoding:    DefaultEncoding,
+		level:       DefaultLevel,
+		levelKey:    DefaultLevelKey,
+		msgKey:      DefaultMessageKey,
+		timeKey:     DefaultTimeKey,
+		errorKey:    DefaultErrorKey,
+		outputPaths: []string{DefaultOutputPath},
 	}
 
 	for i := range opts {
@@ -246,7 +262,7 @@ func Context(parent context.Context, opts ...ContextOption) context.Context {
 			EncodeTime:  zapcore.RFC3339TimeEncoder,
 			EncodeLevel: zapcore.CapitalLevelEncoder,
 		},
-		OutputPaths: []string{o.outputPath},
+		OutputPaths: o.outputPaths,
 	}
 
 	logger := zap.Must(zapConfig.Build())
